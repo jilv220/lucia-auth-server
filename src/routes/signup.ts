@@ -60,11 +60,7 @@ router.post("/signup", async (req, res) => {
   });
 
   const token = await generateEmailVerificationToken(user.userId);
-
-  // Prevent blocking the current event loop
-  setImmediate(async () => {
-    await sendEmailVerificationLink(user.email, token);
-  });
+  sendEmailVerificationLink(user.email, token);
 
   const sessionCookie = auth.createSessionCookie(session);
   res.setHeader("Set-Cookie", sessionCookie.serialize());

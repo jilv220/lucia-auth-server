@@ -1,9 +1,6 @@
 import { transporter } from "../config/email.ts";
 
-export const sendEmailVerificationLink = async (
-  email: string,
-  token: string
-) => {
+export const sendEmailVerificationLink = (email: string, token: string) => {
   const domainURL = process.env.DOMAIN_URL!;
   const url = `${domainURL}/email-verification/${token}`;
   const msg = "Click Here to Verify Your Account";
@@ -16,5 +13,12 @@ export const sendEmailVerificationLink = async (
     html: `<a href=${url}>${msg}</a>`,
   };
 
-  await transporter.sendMail(mailOpts);
+  transporter
+    .sendMail(mailOpts)
+    .then((info) => {
+      console.log(`Email sent: ${info.messageId}`);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 };
