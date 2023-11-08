@@ -5,6 +5,8 @@ export const key = sqliteTable("user_key", {
   id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
-    .references(() => user.id),
+    .references(() => user.id, {
+      onDelete: "cascade",
+    }),
   hashedPassword: text("hashed_password"),
 });

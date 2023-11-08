@@ -2,6 +2,10 @@ import { Router } from "express";
 import { userInsertSchema } from "../validator/user.ts";
 import { auth } from "../db/lucia.ts";
 import { authCreateUserSafe } from "../lib/safeAuth.ts";
+import { buildClientErrorResponse } from "../lib/utils.ts";
+import { UNKNOWN_ERR } from "../constant/error.ts";
+import { generateEmailVerificationToken } from "../lib/token.ts";
+import { sendEmailVerificationLink } from "../lib/email.ts";
 
 const router: Router = Router();
 
@@ -11,47 +15,60 @@ router.post("/signup", async (req, res) => {
   if (!userParseRes.success) {
     const formatted = userParseRes.error.format();
     if (formatted.username) {
-      return res.status(400).json(formatted.username._errors);
+      return buildClientErrorResponse(res, formatted.username._errors);
     }
     if (formatted.password) {
-      return res.status(400).json(formatted.password._errors);
+      return buildClientErrorResponse(res, formatted.password._errors);
     }
-    return res.status(400).json(["unknown error"]);
+    if (formatted.email) {
+      return buildClientErrorResponse(res, formatted.email._errors);
+    }
+    return buildClientErrorResponse(res, UNKNOWN_ERR);
   }
 
-  const userToInsert = userParseRes.data;
-  const user = await authCreateUserSafe({
+  const { email, password, username } = userParseRes.data;
+  const userCreateRes = await authCreateUserSafe({
     key: {
-      providerId: "username",
-      providerUserId: userToInsert.username.toLowerCase(),
-      password: userToInsert.password,
+      providerId: "email",
+      providerUserId: email.toLowerCase(),
+      password,
     },
     attributes: {
-      username: userToInsert.username,
+      username: username,
+      email: email.toLowerCase(),
+      email_verified: 0,
     },
   });
 
-  if (user.isErr && user.error instanceof Error) {
-    switch (user.error.message) {
+  if (userCreateRes.isErr && userCreateRes.error instanceof Error) {
+    switch (userCreateRes.error.message) {
       case "AUTH_DUPLICATE_KEY_ID":
         return res.status(400).json({
-          error: "Username is not unique",
+          error: "Account already exists",
         });
     }
+    console.log(userCreateRes.error);
     return res.status(400).json({
       error: "Unknown erorr",
     });
   }
+  const user = userCreateRes.unwrap();
 
   const session = await auth.createSession({
-    userId: user.unwrap().userId,
+    userId: user.userId,
     attributes: {},
   });
 
-  return res.json({
-    token: session.sessionId,
-    user: user.unwrap(),
+  const token = await generateEmailVerificationToken(user.userId);
+
+  // Prevent blocking the current event loop
+  setImmediate(async () => {
+    await sendEmailVerificationLink(user.email, token);
   });
+
+  const sessionCookie = auth.createSessionCookie(session);
+  res.setHeader("Set-Cookie", sessionCookie.serialize());
+  res.sendStatus(302);
 });
 
 export default router;

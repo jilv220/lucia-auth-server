@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { userSelectSchema } from "../validator/user.ts";
-import { buildErrorResponse } from "../lib/utils.ts";
+import { buildClientErrorResponse } from "../lib/utils.ts";
 import { auth } from "../db/lucia.ts";
 import { authUsekeySafe } from "../lib/safeAuth.ts";
 import {
@@ -15,12 +15,12 @@ router.post("/login", async (req, res) => {
   if (!userParseRes.success) {
     const formatted = userParseRes.error.format();
     if (formatted.username) {
-      return buildErrorResponse(res, "Invalid username");
+      return buildClientErrorResponse(res, "Invalid username");
     }
     if (formatted.password) {
-      return buildErrorResponse(res, "Invalid password");
+      return buildClientErrorResponse(res, "Invalid password");
     }
-    return buildErrorResponse(res, "Unknown parse error");
+    return buildClientErrorResponse(res, "Unknown parse error");
   }
 
   const { username, password } = userParseRes.data;
@@ -32,11 +32,11 @@ router.post("/login", async (req, res) => {
   if (key.isErr && key.error instanceof Error) {
     switch (key.error.message) {
       case "AUTH_INVALID_KEY_ID":
-        return buildErrorResponse(res, INCORRECT_USERNAME_OR_PASSWORD);
+        return buildClientErrorResponse(res, INCORRECT_USERNAME_OR_PASSWORD);
       case "AUTH_INVALID_PASSWORD":
-        return buildErrorResponse(res, INCORRECT_USERNAME_OR_PASSWORD);
+        return buildClientErrorResponse(res, INCORRECT_USERNAME_OR_PASSWORD);
     }
-    return buildErrorResponse(res, UNKNOWN_ERR);
+    return buildClientErrorResponse(res, UNKNOWN_ERR);
   }
 
   const session = await auth.createSession({

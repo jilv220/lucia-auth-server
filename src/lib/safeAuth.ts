@@ -2,16 +2,9 @@ import { Result } from "@badrap/result";
 import { auth } from "../db/lucia.ts";
 import { ArgumentsType } from "./utils.ts";
 
-export function authCreateUserSafe(options: {
-  userId?: string;
-  key: {
-    providerId: string;
-    providerUserId: string;
-    password: string | null;
-  } | null;
-  attributes: Lucia.DatabaseUserAttributes;
-}) {
-  return auth.createUser(options).then(
+type authCreateUserArgs = ArgumentsType<typeof auth.createUser>;
+export function authCreateUserSafe(...args: authCreateUserArgs) {
+  return auth.createUser(...args).then(
     (v) => Result.ok(v),
     (e) => Result.err(e)
   );

@@ -5,7 +5,9 @@ export const session = sqliteTable("user_session", {
   id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
-    .references(() => user.id),
+    .references(() => user.id, {
+      onDelete: "cascade",
+    }),
   activeExpires: blob("active_expires", {
     mode: "bigint",
   }).notNull(),

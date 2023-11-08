@@ -1,6 +1,9 @@
 import { response } from "express";
 
-export function buildErrorResponse(res: typeof response, e: string | string[]) {
+export function buildClientErrorResponse(
+  res: typeof response,
+  e: string | string[]
+) {
   return res.status(400).json(e);
 }
 

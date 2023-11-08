@@ -3,6 +3,7 @@ import signupRouter from "./routes/signup.ts";
 import loginRouter from "./routes/login.ts";
 import userRouter from "./routes/user.ts";
 import logoutRouter from "./routes/logout.ts";
+import "dotenv/config";
 
 const app = express();
 const port = 3000;

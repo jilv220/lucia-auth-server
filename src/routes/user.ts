@@ -10,7 +10,7 @@ router.get("/user", async (req, res) => {
   if (session) {
     return res.send(`Welcome user: ${session.user.username}`);
   }
-  return buildErrorResponse(res, "Unathorized");
+  return res.sendStatus(401);
 });
 
 export default router;
