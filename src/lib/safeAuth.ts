@@ -1,6 +1,6 @@
-import { Result } from "@badrap/result";
-import { auth } from "../db/lucia.ts";
-import { ArgumentsType } from "./utils.ts";
+import { Result } from '@badrap/result';
+import { auth } from '../db/lucia.ts';
+import { ArgumentsType } from './utilTypes.ts';
 
 type authCreateUserArgs = ArgumentsType<typeof auth.createUser>;
 export function authCreateUserSafe(...args: authCreateUserArgs) {

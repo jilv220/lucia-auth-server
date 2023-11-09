@@ -1,16 +1,16 @@
-import { blob, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { user } from "./user.ts";
-import { relations } from "drizzle-orm";
+import { relations } from 'drizzle-orm';
+import { bigint, text, pgTable } from 'drizzle-orm/pg-core';
+import { user } from './user.ts';
 
-export const emailVerificationToken = sqliteTable("email_verification_token", {
-  id: text("id").notNull(),
-  expires: blob("expires", {
-    mode: "bigint",
+export const emailVerificationToken = pgTable('email_verification_token', {
+  id: text('id').notNull(),
+  expires: bigint('expires', {
+    mode: 'bigint',
   }).primaryKey(),
-  userId: text("user_id")
+  userId: text('user_id')
     .notNull()
     .references(() => user.id, {
-      onDelete: "cascade",
+      onDelete: 'cascade',
     }),
 });
 
@@ -21,5 +21,5 @@ export const emailVerificationTokenRelations = relations(
       fields: [emailVerificationToken.userId],
       references: [user.id],
     }),
-  })
+  }),
 );

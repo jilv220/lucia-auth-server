@@ -1,16 +1,23 @@
-import { drizzle, BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import sqlite from "better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import { user } from "../schema/user.ts";
-import { emailVerificationToken } from "../schema/email_verification_token.ts";
+import 'dotenv/config';
 
-export const sqliteDataBase: sqlite.Database = new sqlite("sqlite.db");
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 
-export const db = drizzle(sqliteDataBase, {
+import ws from 'ws';
+import { emailVerificationToken } from '../schema/email_verification_token.ts';
+import { user } from '../schema/user.ts';
+
+neonConfig.webSocketConstructor = ws;
+
+export const neonClient = new Pool({
+  connectionString: process.env.DATABASE_URL!,
+});
+export const db = drizzle(neonClient, {
   schema: {
     user,
     emailVerificationToken,
   },
 });
 
-migrate(db, { migrationsFolder: "drizzle" });
+migrate(db, { migrationsFolder: 'drizzle' });

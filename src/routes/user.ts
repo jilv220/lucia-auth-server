@@ -1,10 +1,9 @@
-import { Router } from "express";
-import { auth } from "../db/lucia.ts";
-import { buildErrorResponse } from "../lib/utils.ts";
+import { Router } from 'express';
+import { auth } from '../db/lucia.ts';
 
 const router = Router();
 
-router.get("/user", async (req, res) => {
+router.get('/user', async (req, res) => {
   const authRequest = auth.handleRequest(req, res);
   const session = await authRequest.validateBearerToken();
   if (session) {

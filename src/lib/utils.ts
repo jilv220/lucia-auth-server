@@ -1,15 +1,21 @@
-import { response } from "express";
+import { response } from 'express';
+import { UNKNOWN_ERR } from '../constant/error.ts';
+
+function buildErrorResponse(
+  res: typeof response,
+  status: number,
+  e: string | string[]
+) {
+  return res.status(status).json(e);
+}
 
 export function buildClientErrorResponse(
   res: typeof response,
   e: string | string[]
 ) {
-  return res.status(400).json(e);
+  return buildErrorResponse(res, 400, e);
 }
 
-// infer the arguments type from certain function, ts magic
-export type ArgumentsType<T extends (...args: any[]) => any> = T extends (
-  ...args: infer A
-) => any
-  ? A
-  : never;
+export function buildUnknownErrorResponse(res: typeof response) {
+  return res.status(500).json(UNKNOWN_ERR);
+}

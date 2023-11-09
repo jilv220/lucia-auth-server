@@ -1,5 +1,5 @@
-import { createTransport } from "nodemailer";
-import "dotenv/config";
+import { createTransport } from 'nodemailer';
+import 'dotenv/config';
 
 const host = process.env.SMTP_HOST;
 const port = process.env.SMTP_PORT;
@@ -8,7 +8,7 @@ const pass = process.env.SMTP_PASS;
 
 export const transporter = createTransport({
   host,
-  port: parseInt(port!) || 465,
+  port: parseInt(port!, 10) || 465,
   secure: true,
   auth: {
     user,

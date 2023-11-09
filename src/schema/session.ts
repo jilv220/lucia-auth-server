@@ -1,17 +1,17 @@
-import { blob, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { user } from "./user.ts";
+import { bigint, text, pgTable } from 'drizzle-orm/pg-core';
+import { user } from './user.ts';
 
-export const session = sqliteTable("user_session", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
+export const session = pgTable('user_session', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
     .notNull()
     .references(() => user.id, {
-      onDelete: "cascade",
+      onDelete: 'cascade',
     }),
-  activeExpires: blob("active_expires", {
-    mode: "bigint",
+  activeExpires: bigint('active_expires', {
+    mode: 'bigint',
   }).notNull(),
-  idleExpires: blob("idle_expires", {
-    mode: "bigint",
+  idleExpires: bigint('idle_expires', {
+    mode: 'bigint',
   }).notNull(),
 });
