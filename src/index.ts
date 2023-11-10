@@ -1,5 +1,5 @@
 import express from 'express';
-import rooterRouter from './routes/root.ts';
+import rootRouter from './routes/root.ts';
 import 'dotenv/config';
 
 const app = express();
@@ -14,7 +14,7 @@ app.use(
 app.use(express.json());
 
 // Routes
-app.use('/', rooterRouter);
+app.use('/', rootRouter);
 
 app.listen(port, () => {
   console.log(`Http server listening on port ${port}`);
