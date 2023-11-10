@@ -30,7 +30,17 @@ export const userInsertSchemaOverride = z.object({
 });
 
 export const userInsertSchema = baseUserInsertSchema.merge(
-  userInsertSchemaOverride,
+  userInsertSchemaOverride
 );
 
-export const userSelectSchema = userInsertSchema;
+export const userLoginSchema = userInsertSchema.omit({
+  username: true,
+});
+
+export const requestPasswordResetSchema = userInsertSchema.pick({
+  email: true,
+});
+
+export const passwordResetSchema = userInsertSchema.pick({
+  password: true,
+});

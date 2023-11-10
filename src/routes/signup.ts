@@ -64,9 +64,11 @@ router.post('/signup', async (req, res) => {
   const token = await emailVerificationTM.generate(user.userId);
   sendEmailVerificationLink(user.email, token);
 
-  const sessionCookie = auth.createSessionCookie(session);
-  res.setHeader('Set-Cookie', sessionCookie.serialize());
-  return res.sendStatus(302);
+  const authRequest = auth.handleRequest(req, res);
+  authRequest.setSession(session);
+  return res.json({
+    redirectTo: '/',
+  });
 });
 
 export default router;

@@ -5,12 +5,9 @@ import { db } from '../db/db.ts';
 import { emailVerificationToken } from '../schema/email_verification_token.ts';
 import { IToken } from '../types/token.ts';
 import { passwordResetToken } from '../schema/password_reset_token.ts';
-import {
-  INVALID_EMAIL_VERIFICATION_TOKEN,
-  EXPIRED_EMAIL_VERIFICATION_TOKEN,
-} from '../constant/error.ts';
+import { EXPIRED_TOKEN, INVALID_TOKEN } from '../constant/error.ts';
 
-type TOKEN_TYPE = 'email_verification' | 'password_reset';
+export type TOKEN_TYPE = 'email_verification' | 'password_reset';
 
 function buildTokenDAO(tokenType: TOKEN_TYPE) {
   let token;
@@ -81,7 +78,7 @@ class TokenManager implements IToken {
       const tokenInDB = await this.dbQuery.findFirst({
         where: eq(this.tokenDAO.id, token),
       });
-      if (!tokenInDB) throw new Error(INVALID_EMAIL_VERIFICATION_TOKEN);
+      if (!tokenInDB) throw new Error(INVALID_TOKEN);
       await tx
         .delete(this.tokenDAO)
         .where(eq(this.tokenDAO.userId, tokenInDB.userId));
@@ -89,7 +86,7 @@ class TokenManager implements IToken {
     });
     const tokenExpires = Number(storedToken.expires);
     if (!isWithinExpiration(tokenExpires)) {
-      throw new Error(EXPIRED_EMAIL_VERIFICATION_TOKEN);
+      throw new Error(EXPIRED_TOKEN);
     }
     return storedToken.userId;
   }

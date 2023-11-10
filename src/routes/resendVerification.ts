@@ -6,10 +6,7 @@ import {
   buildUnknownErrorResponse,
 } from '../lib/utils.ts';
 import { emailVerificationTM } from '../models/tokenManger.ts';
-import {
-  EXPIRED_EMAIL_VERIFICATION_TOKEN,
-  INVALID_EMAIL_VERIFICATION_TOKEN,
-} from '../constant/error.ts';
+import { EXPIRED_TOKEN, INVALID_TOKEN } from '../constant/error.ts';
 
 const router = Router();
 
@@ -50,16 +47,18 @@ router.get('/email-verification/:token', async (req, res) => {
     });
     const authRequest = auth.handleRequest(req, res);
     authRequest.setSession(session);
-    return res.sendStatus(302);
+    return res.json({
+      redirectTo: '/',
+    });
   } catch (e) {
     if (e instanceof Error) {
       switch (e.message) {
-        case INVALID_EMAIL_VERIFICATION_TOKEN:
+        case INVALID_TOKEN:
           return buildClientErrorResponse(
             res,
             'Invalid Email Verification Link'
           );
-        case EXPIRED_EMAIL_VERIFICATION_TOKEN:
+        case EXPIRED_TOKEN:
           return buildClientErrorResponse(
             res,
             'Invalid Email Verification Link'

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { userSelectSchema } from '../validator/user.ts';
+import { userLoginSchema } from '../validator/user.ts';
 import {
   buildClientErrorResponse,
   buildUnknownErrorResponse,
@@ -10,13 +10,10 @@ import { INCORRECT_EMAIL_OR_PASSWORD } from '../constant/error.ts';
 
 const router = Router();
 router.post('/login', async (req, res) => {
-  const userParseRes = userSelectSchema.safeParse(req.body);
+  const userParseRes = userLoginSchema.safeParse(req.body);
 
   if (!userParseRes.success) {
     const formatted = userParseRes.error.format();
-    if (formatted.username) {
-      return buildClientErrorResponse(res, 'Invalid username');
-    }
     if (formatted.password) {
       return buildClientErrorResponse(res, 'Invalid password');
     }
@@ -43,9 +40,11 @@ router.post('/login', async (req, res) => {
     userId: key.unwrap().userId,
     attributes: {},
   });
-  const sessionCookie = auth.createSessionCookie(session);
-  res.setHeader('Set-Cookie', sessionCookie.serialize());
-  return res.sendStatus(302);
+  const authRequest = auth.handleRequest(req, res);
+  authRequest.setSession(session);
+  return res.json({
+    redirectTo: '/',
+  });
 });
 
 export default router;

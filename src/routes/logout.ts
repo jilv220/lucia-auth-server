@@ -4,7 +4,10 @@ import { auth } from '../db/lucia.ts';
 const router = Router();
 router.post('/logout', async (req, res) => {
   const authRequest = auth.handleRequest(req, res);
-  const session = await authRequest.validateBearerToken();
+  let session = await authRequest.validate();
+  if (!session) {
+    session = await authRequest.validateBearerToken();
+  }
   if (!session) {
     return res.sendStatus(401);
   }

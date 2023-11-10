@@ -1,6 +1,7 @@
 /// <reference types="lucia" />
 declare namespace Lucia {
-  type Auth = import("./lucia.js").Auth;
+  // this has to point to the lucia config file
+  type Auth = import('./src/db/lucia.ts').Auth;
   type DatabaseUserAttributes = {
     username: string;
     email: string;
