@@ -7,8 +7,8 @@ import {
   buildUnknownErrorResponse,
 } from '../lib/utils.ts';
 import { UNKNOWN_ERR } from '../constant/error.ts';
-import { generateEmailVerificationToken } from '../lib/token.ts';
 import { sendEmailVerificationLink } from '../lib/email.ts';
+import { emailVerificationTM } from '../models/tokenManger.ts';
 
 const router: Router = Router();
 
@@ -61,7 +61,7 @@ router.post('/signup', async (req, res) => {
     attributes: {},
   });
 
-  const token = await generateEmailVerificationToken(user.userId);
+  const token = await emailVerificationTM.generate(user.userId);
   sendEmailVerificationLink(user.email, token);
 
   const sessionCookie = auth.createSessionCookie(session);

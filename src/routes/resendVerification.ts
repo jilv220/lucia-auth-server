@@ -1,14 +1,11 @@
 import { Router } from 'express';
 import { auth } from '../db/lucia.ts';
-import {
-  generateEmailVerificationToken,
-  validateEmailVerificationTokenSafe,
-} from '../lib/token.ts';
 import { sendEmailVerificationLink } from '../lib/email.ts';
 import {
   buildClientErrorResponse,
   buildUnknownErrorResponse,
 } from '../lib/utils.ts';
+import { emailVerificationTM } from '../models/tokenManger.ts';
 import {
   EXPIRED_EMAIL_VERIFICATION_TOKEN,
   INVALID_EMAIL_VERIFICATION_TOKEN,
@@ -28,7 +25,7 @@ router.post('/email-verification', async (req, res) => {
     return res.status(422).end();
   }
   try {
-    const token = await generateEmailVerificationToken(session.user.userId);
+    const token = await emailVerificationTM.generate(session.user.userId);
     sendEmailVerificationLink(session.user.email, token);
     return res.end();
   } catch (e) {
@@ -39,32 +36,42 @@ router.post('/email-verification', async (req, res) => {
 
 router.get('/email-verification/:token', async (req, res) => {
   const { token } = req.params;
-  const validateRes = await validateEmailVerificationTokenSafe(token);
-  if (validateRes.isErr && validateRes.error instanceof Error) {
-    switch (validateRes.error.message) {
-      case INVALID_EMAIL_VERIFICATION_TOKEN:
-        return buildClientErrorResponse(res, 'Invalid email verification link');
-      case EXPIRED_EMAIL_VERIFICATION_TOKEN:
-        return buildClientErrorResponse(res, 'Invalid email verification link');
-      default:
-        console.error(validateRes);
-        return buildUnknownErrorResponse(res);
-    }
-  }
 
-  const userId = validateRes.unwrap();
-  const user = await auth.getUser(userId);
-  await auth.invalidateAllUserSessions(user.userId);
-  await auth.updateUserAttributes(user.userId, {
-    email_verified: true,
-  });
-  const session = await auth.createSession({
-    userId: user.userId,
-    attributes: {},
-  });
-  const authRequest = auth.handleRequest(req, res);
-  authRequest.setSession(session);
-  return res.sendStatus(302);
+  try {
+    const userId = await emailVerificationTM.validate(token);
+    const user = await auth.getUser(userId);
+    await auth.invalidateAllUserSessions(user.userId);
+    await auth.updateUserAttributes(user.userId, {
+      email_verified: true,
+    });
+    const session = await auth.createSession({
+      userId: user.userId,
+      attributes: {},
+    });
+    const authRequest = auth.handleRequest(req, res);
+    authRequest.setSession(session);
+    return res.sendStatus(302);
+  } catch (e) {
+    if (e instanceof Error) {
+      switch (e.message) {
+        case INVALID_EMAIL_VERIFICATION_TOKEN:
+          return buildClientErrorResponse(
+            res,
+            'Invalid Email Verification Link'
+          );
+        case EXPIRED_EMAIL_VERIFICATION_TOKEN:
+          return buildClientErrorResponse(
+            res,
+            'Invalid Email Verification Link'
+          );
+        default:
+          console.error(e);
+          return buildUnknownErrorResponse(res);
+      }
+    }
+    console.error(e);
+    return buildUnknownErrorResponse(res);
+  }
 });
 
 export default router;
