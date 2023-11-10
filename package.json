@@ -1,5 +1,5 @@
 {
-  "name": "lucia-gql-template",
+  "name": "lucia-auth-server",
   "type": "module",
   "scripts": {
     "dev": "nodemon",
